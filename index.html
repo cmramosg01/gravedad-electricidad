@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Newton a Coulomb - Interactivos CITE-STEAM</title>
+    <style>
+        /* RESET Y ESTILOS BÁSICOS */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #1e293b; line-height: 1.6; }
+        
+        /* LAYOUT */
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        
+        /* HEADER */
+        header { background: white; padding: 20px; border-bottom: 3px solid #e2e8f0; margin-bottom: 30px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-img { width: 60px; height: 60px; object-fit: contain; }
+        .title h1 { color: #4338ca; font-size: 1.8rem; margin: 0; line-height: 1.2; }
+        .title p { color: #64748b; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* NAVEGACIÓN TABS */
+        .nav-tabs { background: #f1f5f9; padding: 5px; border-radius: 10px; display: flex; gap: 5px; }
+        .tab-btn { border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s; color: #64748b; background: transparent; }
+        .tab-btn:hover { background: #e2e8f0; }
+        .tab-btn.active { background: white; color: #4338ca; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn.active.coulomb { color: #db2777; }
+
+        /* CONTENIDO */
+        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 768px) { .grid-layout { grid-template-columns: 1fr; } }
+
+        /* TARJETAS */
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .card-header { font-weight: bold; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        
+        /* ESTILOS ESPECÍFICOS - NEWTON */
+        .newton-header { background: #2563eb; color: white; }
+        .newton-text { color: #2563eb; }
+        
+        /* ESTILOS ESPECÍFICOS - COULOMB */
+        .coulomb-header { background: #4f46e5; color: white; }
+        .coulomb-text { color: #4f46e5; }
+
+        /* SIMULADORES Y FORMULAS */
+        .formula-box { background: rgba(255,255,255,0.15); padding: 15px; border-radius: 10px; text-align: center; font-family: monospace; font-size: 1.3rem; margin-top: 15px; border: 1px solid rgba(255,255,255,0.3); }
+        .fraction { display: inline-block; vertical-align: middle; text-align: center; font-size: 0.9em; }
+        .numerator { border-bottom: 2px solid currentColor; display: block; padding: 0 5px; }
+        .denominator { display: block; padding: 0 5px; }
+
+        /* INPUTS */
+        .control-group { margin-bottom: 15px; }
+        .control-label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold; color: #64748b; margin-bottom: 5px; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        
+        /* RESULTADOS */
+        .result-box { background: #0f172a; color: white; padding: 20px; border-radius: 15px; text-align: center; margin-top: 20px; }
+        .result-title { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 5px; }
+        .result-value { font-size: 2rem; font-weight: 900; }
+
+        /* EJERCICIOS */
+        .exercise-box { background: #fffbeb; border: 2px solid #fcd34d; }
+        .exercise-title { color: #92400e; }
+        .question { margin-bottom: 15px; background: white; padding: 15px; border-radius: 10px; border: 1px solid #fef3c7; }
+        .question p { font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; font-style: italic; }
+        input[type="text"], select { width: 100%; padding: 8px; border: 2px solid #e2e8f0; border-radius: 8px; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: #4f46e5; }
+        
+        .correct { border-color: #22c55e !important; background-color: #f0fdf4; }
+        .incorrect { border-color: #ef4444 !important; background-color: #fef2f2; }
+
+        /* IFRAME */
+        .iframe-container { width: 100%; aspect-ratio: 16/9; border-radius: 20px; overflow: hidden; border: 1px solid #cbd5e1; background: white; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* FOOTER */
+        footer { margin-top: 40px; border-top: 1px solid #cbd5e1; padding: 30px 20px; background: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .footer-info p { margin: 0; line-height: 1.4; }
+        .footer-credit { text-align: right; }
+        
+        /* INDICADOR TIPO FUERZA */
+        .force-type { padding: 15px; border-radius: 15px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; margin-top: 10px; }
+        .attraction { background: #dcfce7; color: #166534; }
+        .repulsion { background: #ffedd5; color: #9a3412; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-area">
+            <div style="background:#eee; border-radius:10px; padding:5px; width:70px; height:70px; display:flex; align-items:center; justify-content:center;">
+                <!-- Logo con fallback por si no carga -->
+                <img src="logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'; this.parentElement.innerText='CITE'">
+            </div>
+            <div class="title">
+                <h1>De Newton a Coulomb</h1>
+                <p>Proyecto CITE-STEAM | IES San José</p>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <button onclick="switchTab('gravity')" id="btn-gravity" class="tab-btn active">LEY DE NEWTON</button>
+            <button onclick="switchTab('coulomb')" id="btn-coulomb" class="tab-btn">LEY DE COULOMB</button>
+        </div>
+    </header>
+
+    <!-- SECCIÓN GRAVEDAD -->
+    <div id="gravity" class="tab-content active">
+        <div class="grid-layout">
+            
+            <!-- Izquierda: Teoría y Simulador Propio -->
+            <div>
+                <div class="card newton-header">
+                    <h2 style="font-size:1.8rem; margin-bottom:10px;">La Ley de Newton</h2>
+                    <p style="opacity:0.9; font-style:italic;">"La masa atrae a la masa. La distancia debilita la fuerza."</p>
+                    <div class="formula-box">
+                        F = G · <div class="fraction"><span class="numerator">M · m</span><span class="denominator">d²</span></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header newton-text">📊 Simulador de Masas</div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">Masa Planeta (M) <span id="m1-display">50 kg</span></div>
+                        <input type="range" id="m1" min="10" max="100" value="50" oninput="calcGravity()">
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">Masa Satélite (m) <span id="m2-display">50 kg</span></div>
+                        <input type="range" id="m2" min="10" max="100" value="50" oninput="calcGravity()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label">Distancia (d) <span id="dg-display">4 m</span></div>
+                        <input type="range" id="dg" min="2" max="10" value="4" oninput="calcGravity()">
+                    </div>
+
+                    <div class="result-box">
+                        <div class="result-title">Fuerza Gravitatoria</div>
+                        <div class="result-value" id="res-gravity">0.00 N</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Derecha: Ejercicios y PhET -->
+            <div>
+                <div class="card exercise-box">
+                    <div class="card-header exercise-title">✅ Ejercicios Rápidos</div>
+                    
+                    <div class="question">
+                        <p>1. ¿En qué unidad se mide la Masa?</p>
+                        <input type="text" placeholder="Ej: kg" onblur="checkAnswer(this, 'kg')">
+                    </div>
+
+                    <div class="question">
+                        <p>2. Si alejas los planetas, la fuerza...</p>
+                        <select onchange="checkAnswer(this, 'disminuye')">
+                            <option value="">Selecciona...</option>
+                            <option value="aumenta">Aumenta</option>
+                            <option value="disminuye">Disminuye</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="iframe-container">
+                    <iframe src="https://phet.colorado.edu/sims/html/gravity-force-lab-basics/latest/gravity-force-lab-basics_es.html" loading="lazy"></iframe>
+                </div>
+                <p style="text-align:center; font-size:0.7rem; color:#94a3b8; margin-top:5px;">Simulador oficial PhET Colorado</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN COULOMB -->
+    <div id="coulomb" class="tab-content">
+        <div class="grid-layout">
+            
+            <!-- Izquierda: Teoría y Simulador Propio -->
+            <div>
+                <div class="card coulomb-header">
+                    <h2 style="font-size:1.8rem; margin-bottom:10px;">La Ley de Coulomb</h2>
+                    <p style="opacity:0.9; font-style:italic;">"Polos opuestos se atraen. Polos iguales se repelen."</p>
+                    <div class="formula-box">
+                        F = K · <div class="fraction"><span class="numerator">Q · q</span><span class="denominator">d²</span></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header coulomb-text">⚡ Simulador de Cargas</div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">Carga Q (C) <span id="q1-display">5 C</span></div>
+                        <input type="range" id="q1" min="-10" max="10" value="5" oninput="calcCoulomb()">
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">Carga q (C) <span id="q2-display">-5 C</span></div>
+                        <input type="range" id="q2" min="-10" max="10" value="-5" oninput="calcCoulomb()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label">Distancia (d) <span id="dc-display">4 m</span></div>
+                        <input type="range" id="dc" min="2" max="10" value="4" oninput="calcCoulomb()">
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="result-box" style="margin-top:0;">
+                            <div class="result-title">Intensidad</div>
+                            <div class="result-value" id="res-coulomb" style="font-size:1.5rem;">0.00 N</div>
+                        </div>
+                        <div id="force-type-box" class="force-type attraction">
+                            Atracción
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Derecha: Ejercicios y PhET -->
+            <div>
+                <div class="card exercise-box" style="border-color:#c7d2fe; background:#eef2ff;">
+                    <div class="card-header exercise-title" style="color:#3730a3;">⚡ Test Eléctrico</div>
+                    
+                    <div class="question" style="border-color:#e0e7ff;">
+                        <p>1. ¿Cómo se llama la unidad de Carga?</p>
+                        <input type="text" placeholder="Ej: Coulomb" onblur="checkAnswer(this, 'coulomb')">
+                    </div>
+
+                    <div class="question" style="border-color:#e0e7ff;">
+                        <p>2. ¿El electrón tiene carga...?</p>
+                        <select onchange="checkAnswer(this, 'negativa')">
+                            <option value="">Selecciona...</option>
+                            <option value="positiva">Positiva</option>
+                            <option value="negativa">Negativa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="iframe-container">
+                    <iframe src="https://phet.colorado.edu/sims/html/coulombs-law/latest/coulombs-law_es.html" loading="lazy"></iframe>
+                </div>
+                <p style="text-align:center; font-size:0.7rem; color:#94a3b8; margin-top:5px;">Simulador oficial PhET Colorado</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-info">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="logo.png" alt="Logo" style="height:40px;" onerror="this.style.display='none'">
+                <div>
+                    <p style="font-weight:bold; font-size:0.9rem;">PROYECTO CITE-STEAM</p>
+                    <p style="font-size:0.8rem; color:#64748b;">IA, FP y Robótica Inclusiva | IES San José de Badajoz (2026)</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-credit">
+            <p style="font-weight:bold; color:#4338ca;">Cristina Ramos García</p>
+            <p style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8;">Física y Química | 2º ESO</p>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+    // --- LÓGICA DE PESTAÑAS ---
+    function switchTab(tabId) {
+        // Ocultar todos los contenidos
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        // Desactivar botones
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+        // Activar el seleccionado
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+    }
+
+    // --- CÁLCULOS GRAVEDAD ---
+    function calcGravity() {
+        const m1 = parseFloat(document.getElementById('m1').value);
+        const m2 = parseFloat(document.getElementById('m2').value);
+        const d = parseFloat(document.getElementById('dg').value);
+        const G = 6.67;
+
+        // Actualizar etiquetas
+        document.getElementById('m1-display').innerText = m1 + " kg";
+        document.getElementById('m2-display').innerText = m2 + " kg";
+        document.getElementById('dg-display').innerText = d + " m";
+
+        // Calcular Fuerza
+        const force = (G * (m1 * m2) / (d * d)).toFixed(2);
+        document.getElementById('res-gravity').innerText = force + " N";
+    }
+
+    // --- CÁLCULOS COULOMB ---
+    function calcCoulomb() {
+        const q1 = parseFloat(document.getElementById('q1').value);
+        const q2 = parseFloat(document.getElementById('q2').value);
+        const d = parseFloat(document.getElementById('dc').value);
+        const K = 9;
+
+        // Actualizar etiquetas
+        document.getElementById('q1-display').innerText = q1 + " C";
+        document.getElementById('q2-display').innerText = q2 + " C";
+        document.getElementById('dc-display').innerText = d + " m";
+
+        // Calcular Fuerza (valor absoluto para magnitud)
+        const rawForce = K * (q1 * q2) / (d * d);
+        const force = Math.abs(rawForce).toFixed(2);
+        
+        document.getElementById('res-coulomb').innerText = force + " N";
+
+        // Determinar Atracción vs Repulsión
+        const box = document.getElementById('force-type-box');
+        if (rawForce < 0) {
+            box.innerText = "ATRACCIÓN";
+            box.className = "force-type attraction"; // Verde
+        } else {
+            box.innerText = "REPULSIÓN";
+            box.className = "force-type repulsion"; // Naranja/Rojo
+        }
+    }
+
+    // --- VALIDACIÓN EJERCICIOS ---
+    function checkAnswer(element, correctAnswer) {
+        const val = element.value.trim().toLowerCase();
+        if (val === correctAnswer) {
+            element.classList.add('correct');
+            element.classList.remove('incorrect');
+        } else if (val !== "") {
+            element.classList.add('incorrect');
+            element.classList.remove('correct');
+        }
+    }
+
+    // Inicializar cálculos al cargar
+    calcGravity();
+    calcCoulomb();
+
+</script>
+
+</body>
+</html>
